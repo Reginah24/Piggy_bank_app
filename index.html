@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSave Rwanda - Digital Piggy Bank</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 4px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .light-mode {
+            background: #ffffff;
+            color: #1a1a1a;
+        }
+
+        .dark-mode {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: none;
+        }
+
+        .page.active {
+            transform: translateX(0);
+            display: block;
+        }
+
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .dark-mode .status-bar {
+            color: #ffffff;
+        }
+
+        .header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .dark-mode .header {
+            border-bottom-color: #333;
+        }
+
+        .header.with-back {
+            justify-content: flex-start;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            color: #1565C0;
+        }
+
+        .dark-mode .back-btn {
+            color: #4FC3F7;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .page-title {
+            color: #ffffff;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #1565C0, #00A651);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1565C0;
+        }
+
+        .dark-mode .logo-text {
+            color: #4FC3F7;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .dark-mode .theme-toggle {
+            color: #ccc;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .dark-mode .theme-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .main-content {
+            padding: 24px 20px;
+            height: calc(100% - 160px);
+            overflow-y: auto;
+        }
+
+        .greeting {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .greeting {
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .dark-mode .subtitle {
+            color: #999;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .balance-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .balance-growth {
+            font-size: 12px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .section-title {
+            color: #ffffff;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .action-btn {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dark-mode .action-btn {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #fff;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .deposit-icon { background: #4CAF50; }
+        .withdraw-icon { background: #FF5722; }
+        .transfer-icon { background: #2196F3; }
+        .goal-icon { background: #FF9800; }
+
+        .action-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 88px;
+            background: #fff;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        .dark-mode .bottom-nav {
+            background: #2a2a2a;
+            border-top-color: #444;
+        }
+
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .dark-mode .nav-item {
+            color: #999;
+        }
+
+        .nav-item.active {
+            color: #1565C0;
+        }
+
+        .dark-mode .nav-item.active {
+            color: #4FC3F7;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .form-label {
+            color: #ffffff;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .form-input {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #ffffff;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1565C0;
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+        }
+
+        .primary-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1565C0, #0D47A1);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(21, 101, 192, 0.3);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-btn {
+            width: 100%;
+            background: transparent;
+            color: #1565C0;
+            border: 1px solid #1565C0;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .dark-mode .secondary-btn {
+            color: #4FC3F7;
+            border-color: #4FC3F7;
+        }
+
+        .secondary-btn:hover {
+            background: #1565C0;
+            color: white;
+        }
+
+        .amount-display {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin: 24px 0;
+            color: #1565C0;
+            min-height: 48px;
+        }
+
+        .dark-mode .amount-display {
+            color: #4FC3F7;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .keypad-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .keypad-btn {
+            background: #333;
+            color: #ffffff;
+        }
+
+        .keypad-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .keypad-btn:active {
+            transform: scale(0.95);
+        }
+
+        .payment-methods {
+            margin-top: 24px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .dark-mode .payment-method {
+            border-color: #444;
+        }
+
+        .payment-method:hover {
+            border-color: #1565C0;
+        }
+
+        .payment-method.selected {
+            border-color: #1565C0;
+            background: rgba(21, 101, 192, 0.05);
+        }
+
+        .payment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .mtn-icon { background: #FFCC00; color: #000; }
+        .airtel-icon { background: #E60026; }
+        .bank-icon { background: #1565C0; }
+
+        .fee-notice {
+            background: #FFF3CD;
+            border: 1px solid #FFEAA7;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .dark-mode .fee-notice {
+            background: #3D3D00;
+            border-color: #5D5D00;
+            color: #FFEB3B;
+        }
+
+        .approval-notice {
+            background: #E3F2FD;
+            border: 1px solid #BBDEFB;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #0D47A1;
+        }
+
+        .dark-mode .approval-notice {
+            background: #1A237E;
+            border-color: #3F51B5;
+            color: #90CAF9;
+        }
+
+        .success-message {
+            background: #D4EDDA;
+            border: 1px solid #C3E6CB;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            color: #155724;
+        }
+
+        .dark-mode .success-message {
+            background: #1B4332;
+            border-color: #2D5A3D;
+            color: #4CAF50;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dark-mode .transaction-item {
+            border-bottom-color: #333;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .deposit-transaction { background: #4CAF50; }
+        .withdraw-transaction { background: #FF5722; }
+        .transfer-transaction { background: #2196F3; }
+        .pending-transaction { background: #FF9800; }
+
+        .transaction-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .transaction-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .dark-mode .transaction-date {
+            color: #999;
+        }
+
+        .transaction-amount {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .positive { color: #4CAF50; }
+        .negative { color: #FF5722; }
+        .pending { color: #FF9800; }
+
+        .profit-display {
+            background: linear-gradient(135deg, #00A651, #4CAF50);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            color: white;
+            text-align: center;
+        }
+
+        .profit-amount {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profit-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .pending-requests {
+            background: #FFF3CD;
+            border: 1px solid #FFEAA7;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .dark-mode .pending-requests {
+            background: #3D3D00;
+            border-color: #5D5D00;
+        }
+
+        .request-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #FFEAA7;
+        }
+
+        .dark-mode .request-item {
+            border-bottom-color: #5D5D00;
+        }
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .approve-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .reject-btn {
+            background: #FF5722;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .dark-mode .settings-item {
+            border-bottom-color: #333;
+        }
+
+        .settings-item:hover {
+            background: rgba(0,0,0,0.02);
+        }
+
+        .dark-mode .settings-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .settings-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settings-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .profile-icon { background: #2196F3; }
+        .security-icon { background: #FF9800; }
+        .notification-icon { background: #9C27B0; }
+        .support-icon { background: #4CAF50; }
+        .logout-icon { background: #FF5722; }
+
+        .terms-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .dark-mode .terms-content {
+            color: #999;
+        }
+
+        .terms-section {
+            margin-bottom: 24px;
+        }
+
+        .terms-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .dark-mode .terms-section h3 {
+            color: #ffffff;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fff;
+            color: #666;
+        }
+
+        .dark-mode .filter-tab {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #999;
+        }
+
+        .filter-tab.active {
+            background: #1565C0;
+            color: white;
+            border-color: #1565C0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .dark-mode .stat-card {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1565C0;
+        }
+
+        .dark-mode .stat-value {
+            color: #4FC3F7;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .dark-mode .stat-label {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="screen light-mode" id="screen">
+            
+            <!-- HOME PAGE -->
+            <div class="page active" id="home-page">
+                <div class="status-bar">
+                    <span id="current-time">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header">
+                    <div class="logo">
+                        <div class="logo-icon">S</div>
+                        <div class="logo-text">SmartSave</div>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                </div>
+                
+                <div class="main-content">
+                    <div class="greeting">Good morning, Jean</div>
+                    <div class="subtitle">Your digital piggy bank is secure</div>
+                    
+                    <div class="balance-card" onclick="showPage('balance-details')">
+                        <div class="balance-header">
+                            <div class="balance-label">Total Savings Balance</div>
+                            <div class="status-indicator">Protected</div>
+                        </div>
+                        <div class="balance-amount" id="total-balance">285,750 RWF</div>
+                        <div class="balance-growth">
+                            ▲ +5.2% this month • 12,450 RWF growth
+                        </div>
+                    </div>
+
+                    <!-- Pending Withdrawal Requests -->
+                    <div id="pending-requests-home" style="display: none;">
+                        <div class="pending-requests">
+                            <div style="font-weight: 600; margin-bottom: 8px; color: #856404;">
+                                🔒 Pending Withdrawal Requests
+                            </div>
+                            <div id="pending-list-home"></div>
+                        </div>
+                    </div>
+
+                    <!-- Your Profit Display -->
+                    <div class="profit-display">
+                        <div class="profit-amount" id="total-profit">5,715 RWF</div>
+                        <div class="profit-label">Your Total Profit (2% from withdrawals)</div>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="showPage('deposit')">
+                            <div class="action-icon deposit-icon">+</div>
+                            <div class="action-text">Deposit Money</div>
+                        </button>
+                        <button class="action-btn" onclick="showPage('withdraw')">
+                            <div class="action-icon withdraw-icon">🔒</div>
+                            <div class="action-text">Request Withdrawal</div>
+                        </button>
+                        <button class="action-btn" onclick="showPage('transfer')">
+                            <div class="action-icon transfer-icon">→</div>
+                            <div class="action-text">Send Money</div>
+                        </button>
+                        <button class="action-btn" onclick="showPage('new-goal')">
+                            <div class="action-icon goal-icon">○</div>
+                            <div class="action-text">New Goal</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVITY/HISTORY PAGE -->
+            <div class="page" id="activity-page">
+                <div class="status-bar">
+                    <span id="current-time-2">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Transaction History</div>
+                </div>
+                
+                <div class="main-content">
+                    <!-- Statistics -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-deposits">0</div>
+                            <div class="stat-label">Total Deposits</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-withdrawals">0</div>
+                            <div class="stat-label">Total Withdrawals</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-transfers">0</div>
+                            <div class="stat-label">Money Sent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="pending-count">0</div>
+                            <div class="stat-label">Pending Requests</div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Withdrawal Requests -->
+                    <div id="pending-requests-section" style="display: none;">
+                        <div class="section-title">Pending Withdrawal Requests</div>
+                        <div class="pending-requests">
+                            <div id="pending-requests-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="filter-tabs">
+                        <div class="filter-tab active" onclick="filterTransactions('all')">All</div>
+                        <div class="filter-tab" onclick="filterTransactions('deposit')">Deposits</div>
+                        <div class="filter-tab" onclick="filterTransactions('withdraw')">Withdrawals</div>
+                        <div class="filter-tab" onclick="filterTransactions('transfer')">Transfers</div>
+                        <div class="filter-tab" onclick="filterTransactions('pending')">Pending</div>
+                    </div>
+
+                    <!-- Transaction List -->
+                    <div class="section-title">All Transactions</div>
+                    <div id="transaction-list">
+                        <!-- Transactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS/TERMS PAGE -->
+            <div class="page" id="analytics-page">
+                <div class="status-bar">
+                    <span id="current-time-3">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Terms & Conditions</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="terms-content">
+                        <div class="terms-section">
+                            <h3>🏦 SmartSave Digital Piggy Bank</h3>
+                            <p>Welcome to SmartSave, Rwanda's premier digital piggy bank service designed to help you save money securely with built-in withdrawal protection.</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>💰 Fee Structure</h3>
+                            <p><strong>Deposits:</strong> FREE - No charges for adding money to your account</p>
+                            <p><strong>Withdrawals:</strong> 2% service fee on all withdrawal amounts</p>
+                            <p><strong>Transfers:</strong> FREE - Send money to friends and family at no cost</p>
+                            <p><strong>Account Maintenance:</strong> FREE - No monthly or annual fees</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>🔒 Withdrawal Protection System</h3>
+                            <p>To maintain the "piggy bank" concept and help you save effectively:</p>
+                            <p>• All withdrawal requests require approval from a designated second party</p>
+                            <p>• This prevents impulsive spending and encourages long-term saving</p>
+                            <p>• You can set up a trusted family member or friend as your approver</p>
+                            <p>• Emergency withdrawals may be processed with additional verification</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>📱 Supported Payment Methods</h3>
+                            <p><strong>Mobile Money:</strong></p>
+                            <p>• MTN Mobile Money</p>
+                            <p>• Airtel Money</p>
+                            <p><strong>Banking:</strong></p>
+                            <p>• All major Rwandan banks</p>
+                            <p>• Real-time transfers and deposits</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>🛡️ Security & Privacy</h3>
+                            <p>• Your money is secured with bank-level encryption</p>
+                            <p>• All transactions are monitored for fraud protection</p>
+                            <p>• Personal information is never shared with third parties</p>
+                            <p>• 24/7 customer support available</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>⚖️ Legal Terms</h3>
+                            <p>• SmartSave is licensed by the National Bank of Rwanda</p>
+                            <p>• Funds are insured up to 5,000,000 RWF per account</p>
+                            <p>• Disputes are resolved through Rwanda's financial mediation system</p>
+                            <p>• Terms may be updated with 30 days notice</p>
+                        </div>
+
+                        <div class="terms-section">
+                            <h3>📞 Contact Information</h3>
+                            <p><strong>Customer Service:</strong> +250 788 123 456</p>
+                            <p><strong>Email:</strong> support@smartsave.rw</p>
+                            <p><strong>Office:</strong> KG 123 St, Kigali, Rwanda</p>
+                            <p><strong>Hours:</strong> Monday - Friday, 8:00 AM - 6:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div class="page" id="settings-page">
+                <div class="status-bar">
+                    <span id="current-time-4">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Settings</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="section-title">Account Settings</div>
+                    
+                    <div class="settings-item" onclick="showPage('profile')">
+                        <div class="settings-info">
+                            <div class="settings-icon profile-icon">👤</div>
+                            <div>
+                                <div style="font-weight: 600;">Profile Information</div>
+                                <div style="font-size: 12px; color: #666;">Update your personal details</div>
+                            </div>
+                        </div>
+                        <div>→</div>
+                    </div>
+
+                    <div class="settings-item" onclick="showPage('security')">
+                        <div class="settings-info">
+                            <div class="settings-icon security-icon">🔐</div>
+                            <div>
+                                <div style="font-weight: 600;">Security & Privacy</div>
+                                <div style="font-size: 12px; color: #666;">Manage withdrawal approver, PIN</div>
+                            </div>
+                        </div>
+                        <div>→</div>
+                    </div>
+
+                    <div class="settings-item" onclick="toggleNotifications()">
+                        <div class="settings-info">
+                            <div class="settings-icon notification-icon">🔔</div>
+                            <div>
+                                <div style="font-weight: 600;">Notifications</div>
+                                <div style="font-size: 12px; color: #666;">Transaction alerts, reminders</div>
+                            </div>
+                        </div>
+                        <div id="notification-toggle">ON</div>
+                    </div>
+
+                    <div class="section-title" style="margin-top: 32px;">Support</div>
+
+                    <div class="settings-item" onclick="contactSupport()">
+                        <div class="settings-info">
+                            <div class="settings-icon support-icon">💬</div>
+                            <div>
+                                <div style="font-weight: 600;">Customer Support</div>
+                                <div style="font-size: 12px; color: #666;">Get help, report issues</div>
+                            </div>
+                        </div>
+                        <div>→</div>
+                    </div>
+
+                    <div class="settings-item" onclick="showPage('analytics')">
+                        <div class="settings-info">
+                            <div class="settings-icon" style="background: #9C27B0;">📋</div>
+                            <div>
+                                <div style="font-weight: 600;">Terms & Conditions</div>
+                                <div style="font-size: 12px; color: #666;">Read our terms and fees</div>
+                            </div>
+                        </div>
+                        <div>→</div>
+                    </div>
+
+                    <div class="section-title" style="margin-top: 32px;">Account Actions</div>
+
+                    <div class="settings-item" onclick="logout()">
+                        <div class="settings-info">
+                            <div class="settings-icon logout-icon">🚪</div>
+                            <div>
+                                <div style="font-weight: 600; color: #FF5722;">Logout</div>
+                                <div style="font-size: 12px; color: #666;">Sign out of your account</div>
+                            </div>
+                        </div>
+                        <div>→</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WITHDRAW PAGE (Updated with Approval System) -->
+            <div class="page" id="withdraw-page">
+                <div class="status-bar">
+                    <span id="current-time-5">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Request Withdrawal</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="approval-notice">
+                        <strong>🔒 Withdrawal Protection Active</strong><br>
+                        All withdrawal requests require approval from your designated approver (Mom - +250 788 123 456) to maintain your savings discipline.
+                    </div>
+
+                    <div class="amount-display" id="withdraw-amount-display">0 RWF</div>
+                    
+                    <div class="fee-notice">
+                        <strong>Withdrawal Fee:</strong> 2% service charge applies to all withdrawals. This helps us maintain and improve our services.
+                    </div>
+                    
+                    <div class="keypad">
+                        <button class="keypad-btn" onclick="addToAmount('1', 'withdraw')">1</button>
+                        <button class="keypad-btn" onclick="addToAmount('2', 'withdraw')">2</button>
+                        <button class="keypad-btn" onclick="addToAmount('3', 'withdraw')">3</button>
+                        <button class="keypad-btn" onclick="addToAmount('4', 'withdraw')">4</button>
+                        <button class="keypad-btn" onclick="addToAmount('5', 'withdraw')">5</button>
+                        <button class="keypad-btn" onclick="addToAmount('6', 'withdraw')">6</button>
+                        <button class="keypad-btn" onclick="addToAmount('7', 'withdraw')">7</button>
+                        <button class="keypad-btn" onclick="addToAmount('8', 'withdraw')">8</button>
+                        <button class="keypad-btn" onclick="addToAmount('9', 'withdraw')">9</button>
+                        <button class="keypad-btn" onclick="addToAmount('.', 'withdraw')">.</button>
+                        <button class="keypad-btn" onclick="addToAmount('0', 'withdraw')">0</button>
+                        <button class="keypad-btn" onclick="deleteAmount('withdraw')">⌫</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason for Withdrawal</label>
+                        <input type="text" class="form-input" placeholder="e.g., Emergency, School fees, etc." id="withdrawal-reason">
+                    </div>
+
+                    <div class="payment-methods">
+                        <div class="section-title">Select Withdrawal Destination</div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('MTN Mobile Money', 'withdraw')">
+                            <div class="payment-info">
+                                <div class="payment-icon mtn-icon">M</div>
+                                <div>
+                                    <div style="font-weight: 600;">MTN Mobile Money</div>
+                                    <div style="font-size: 12px; color: #666;">**** **** 1234</div>
+                                </div>
+                            </div>
+                            <div id="mtn-check-withdraw">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Airtel Money', 'withdraw')">
+                            <div class="payment-info">
+                                <div class="payment-icon airtel-icon">A</div>
+                                <div>
+                                    <div style="font-weight: 600;">Airtel Money</div>
+                                    <div style="font-size: 12px; color: #666;">**** **** 5678</div>
+                                </div>
+                            </div>
+                            <div id="airtel-check-withdraw">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Bank Transfer', 'withdraw')">
+                            <div class="payment-info">
+                                <div class="payment-icon bank-icon">B</div>
+                                <div>
+                                    <div style="font-weight: 600;">Bank Transfer</div>
+                                    <div style="font-size: 12px; color: #666;">BK **** 9012</div>
+                                </div>
+                            </div>
+                            <div id="bank-check-withdraw">○</div>
+                        </div>
+                    </div>
+
+                    <div id="withdrawal-summary" style="display: none;">
+                        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>Withdrawal Amount:</span>
+                                <span id="withdrawal-base-amount">0 RWF</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>Service Fee (2%):</span>
+                                <span id="withdrawal-fee">0 RWF</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #ddd; padding-top: 8px;">
+                                <span>You'll Receive:</span>
+                                <span id="withdrawal-net-amount">0 RWF</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="primary-btn" onclick="requestWithdrawal()">
+                        Submit Withdrawal Request
+                    </button>
+                </div>
+            </div>
+
+            <!-- Other pages remain the same but I'll include the essential ones -->
+            
+            <!-- DEPOSIT PAGE -->
+            <div class="page" id="deposit-page">
+                <div class="status-bar">
+                    <span id="current-time-6">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Deposit Money</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="amount-display" id="deposit-amount-display">0 RWF</div>
+                    
+                    <div class="keypad">
+                        <button class="keypad-btn" onclick="addToAmount('1', 'deposit')">1</button>
+                        <button class="keypad-btn" onclick="addToAmount('2', 'deposit')">2</button>
+                        <button class="keypad-btn" onclick="addToAmount('3', 'deposit')">3</button>
+                        <button class="keypad-btn" onclick="addToAmount('4', 'deposit')">4</button>
+                        <button class="keypad-btn" onclick="addToAmount('5', 'deposit')">5</button>
+                        <button class="keypad-btn" onclick="addToAmount('6', 'deposit')">6</button>
+                        <button class="keypad-btn" onclick="addToAmount('7', 'deposit')">7</button>
+                        <button class="keypad-btn" onclick="addToAmount('8', 'deposit')">8</button>
+                        <button class="keypad-btn" onclick="addToAmount('9', 'deposit')">9</button>
+                        <button class="keypad-btn" onclick="addToAmount('.', 'deposit')">.</button>
+                        <button class="keypad-btn" onclick="addToAmount('0', 'deposit')">0</button>
+                        <button class="keypad-btn" onclick="deleteAmount('deposit')">⌫</button>
+                    </div>
+
+                    <div class="payment-methods">
+                        <div class="section-title">Select Payment Source</div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('MTN Mobile Money', 'deposit')">
+                            <div class="payment-info">
+                                <div class="payment-icon mtn-icon">M</div>
+                                <div>
+                                    <div style="font-weight: 600;">MTN Mobile Money</div>
+                                    <div style="font-size: 12px; color: #666;">**** **** 1234</div>
+                                </div>
+                            </div>
+                            <div id="mtn-check-deposit">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Airtel Money', 'deposit')">
+                            <div class="payment-info">
+                                <div class="payment-icon airtel-icon">A</div>
+                                <div>
+                                    <div style="font-weight: 600;">Airtel Money</div>
+                                    <div style="font-size: 12px; color: #666;">**** **** 5678</div>
+                                </div>
+                            </div>
+                            <div id="airtel-check-deposit">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Bank Transfer', 'deposit')">
+                            <div class="payment-info">
+                                <div class="payment-icon bank-icon">B</div>
+                                <div>
+                                    <div style="font-weight: 600;">Bank Transfer</div>
+                                    <div style="font-size: 12px; color: #666;">BK **** 9012</div>
+                                </div>
+                            </div>
+                            <div id="bank-check-deposit">○</div>
+                        </div>
+                    </div>
+                    
+                    <button class="primary-btn" onclick="processDeposit()">
+                        Confirm Deposit
+                    </button>
+                </div>
+            </div>
+
+            <!-- TRANSFER PAGE -->
+            <div class="page" id="transfer-page">
+                <div class="status-bar">
+                    <span id="current-time-7">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Send Money</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="form-group">
+                        <label class="form-label">Recipient Phone Number</label>
+                        <input type="tel" class="form-input" placeholder="078XXXXXXX" id="recipient-phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Recipient Name</label>
+                        <input type="text" class="form-input" placeholder="Enter recipient name" id="recipient-name">
+                    </div>
+
+                    <div class="amount-display" id="transfer-amount-display">0 RWF</div>
+                    
+                    <div class="keypad">
+                        <button class="keypad-btn" onclick="addToAmount('1', 'transfer')">1</button>
+                        <button class="keypad-btn" onclick="addToAmount('2', 'transfer')">2</button>
+                        <button class="keypad-btn" onclick="addToAmount('3', 'transfer')">3</button>
+                        <button class="keypad-btn" onclick="addToAmount('4', 'transfer')">4</button>
+                        <button class="keypad-btn" onclick="addToAmount('5', 'transfer')">5</button>
+                        <button class="keypad-btn" onclick="addToAmount('6', 'transfer')">6</button>
+                        <button class="keypad-btn" onclick="addToAmount('7', 'transfer')">7</button>
+                        <button class="keypad-btn" onclick="addToAmount('8', 'transfer')">8</button>
+                        <button class="keypad-btn" onclick="addToAmount('9', 'transfer')">9</button>
+                        <button class="keypad-btn" onclick="addToAmount('.', 'transfer')">.</button>
+                        <button class="keypad-btn" onclick="addToAmount('0', 'transfer')">0</button>
+                        <button class="keypad-btn" onclick="deleteAmount('transfer')">⌫</button>
+                    </div>
+
+                    <div class="payment-methods">
+                        <div class="section-title">Select Transfer Method</div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('MTN Mobile Money', 'transfer')">
+                            <div class="payment-info">
+                                <div class="payment-icon mtn-icon">M</div>
+                                <div>
+                                    <div style="font-weight: 600;">MTN Mobile Money</div>
+                                    <div style="font-size: 12px; color: #666;">Send to MTN number</div>
+                                </div>
+                            </div>
+                            <div id="mtn-check-transfer">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Airtel Money', 'transfer')">
+                            <div class="payment-info">
+                                <div class="payment-icon airtel-icon">A</div>
+                                <div>
+                                    <div style="font-weight: 600;">Airtel Money</div>
+                                    <div style="font-size: 12px; color: #666;">Send to Airtel number</div>
+                                </div>
+                            </div>
+                            <div id="airtel-check-transfer">○</div>
+                        </div>
+
+                        <div class="payment-method" onclick="selectPaymentMethod('Bank Transfer', 'transfer')">
+                            <div class="payment-info">
+                                <div class="payment-icon bank-icon">B</div>
+                                <div>
+                                    <div style="font-weight: 600;">Bank Transfer</div>
+                                    <div style="font-size: 12px; color: #666;">Send to bank account</div>
+                                </div>
+                            </div>
+                            <div id="bank-check-transfer">○</div>
+                        </div>
+                    </div>
+                    
+                    <button class="primary-btn" onclick="processTransfer()">
+                        Send Money
+                    </button>
+                </div>
+            </div>
+
+            <!-- NEW GOAL PAGE -->
+            <div class="page" id="new-goal-page">
+                <div class="status-bar">
+                    <span id="current-time-8">9:41</span>
+                    <span>●●●●● 100%</span>
+                </div>
+                
+                <div class="header with-back">
+                    <button class="back-btn" onclick="showPage('home')">←</button>
+                    <div class="page-title">Create New Goal</div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="form-group">
+                        <label class="form-label">Goal Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., New Car, Vacation" id="goal-name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Target Amount (RWF)</label>
+                        <input type="number" class="form-input" placeholder="500,000" id="goal-amount">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Target Date</label>
+                        <input type="date" class="form-input" id="goal-date">
+                    </div>
+                    
+                    <button class="primary-btn" onclick="createGoal()">
+                        Create Savings Goal
+                    </button>
+                </div>
+            </div>
+            
+            <!-- BOTTOM NAVIGATION -->
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="showPage('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Home</span>
+                </div>
+                <div class="nav-item" onclick="showPage('activity')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Activity</span>
+                </div>
+                <div class="nav-item" onclick="showPage('analytics')">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Terms</span>
+                </div>
+                <div class="nav-item" onclick="showPage('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let depositAmount = '';
+        let withdrawAmount = '';
+        let transferAmount = '';
+        let selectedDepositMethod = '';
+        let selectedWithdrawMethod = '';
+        let selectedTransferMethod = '';
+        let isDarkMode = false;
+        let totalBalance = 285750;
+        let totalProfit = 5715;
+        let notificationsEnabled = true;
+        let currentFilter = 'all';
+        
+        let transactions = [
+            {
+                id: 1,
+                type: 'deposit',
+                amount: 50000,
+                method: 'MTN Mobile Money',
+                date: new Date('2024-12-15'),
+                description: 'Deposit from MTN',
+                status: 'completed'
+            },
+            {
+                id: 2,
+                type: 'withdraw',
+                amount: 25000,
+                fee: 500,
+                method: 'Airtel Money',
+                date: new Date('2024-12-10'),
+                description: 'Withdrawal to Airtel',
+                status: 'completed'
+            },
+            {
+                id: 3,
+                type: 'transfer',
+                amount: 15000,
+                method: 'MTN Mobile Money',
+                recipient: 'John Doe',
+                phone: '+250788123456',
+                date: new Date('2024-12-08'),
+                description: 'Transfer to John Doe',
+                status: 'completed'
+            }
+        ];
+
+        let pendingWithdrawals = [
+            {
+                id: 'w1',
+                amount: 30000,
+                fee: 600,
+                method: 'MTN Mobile Money',
+                reason: 'School fees',
+                date: new Date('2024-12-16'),
+                status: 'pending'
+            }
+        ];
+
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+            
+            // Update all time displays
+            for (let i = 1; i <= 8; i++) {
+                const timeElement = document.getElementById(`current-time${i === 1 ? '' : '-' + i}`);
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+        }
+
+        // Show page function
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            const targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // Update navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Highlight active nav item and load data
+            if (pageId === 'home') {
+                navItems[0].classList.add('active');
+                updatePendingRequestsHome();
+            } else if (pageId === 'activity') {
+                navItems[1].classList.add('active');
+                loadActivityPage();
+            } else if (pageId === 'analytics') {
+                navItems[2].classList.add('active');
+            } else if (pageId === 'settings') {
+                navItems[3].classList.add('active');
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            const screen = document.getElementById('screen');
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            isDarkMode = !isDarkMode;
+            
+            if (isDarkMode) {
+                screen.classList.remove('light-mode');
+                screen.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+            } else {
+                screen.classList.remove('dark-mode');
+                screen.classList.add('light-mode');
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // Amount input functions
+        function addToAmount(digit, type) {
+            let currentAmount = '';
+            
+            if (type === 'deposit') {
+                currentAmount = depositAmount;
+            } else if (type === 'withdraw') {
+                currentAmount = withdrawAmount;
+            } else if (type === 'transfer') {
+                currentAmount = transferAmount;
+            }
+
+            if (digit === '.' && currentAmount.includes('.')) {
+                return;
+            }
+            
+            currentAmount += digit;
+            
+            if (type === 'deposit') {
+                depositAmount = currentAmount;
+                document.getElementById('deposit-amount-display').textContent = currentAmount + ' RWF';
+            } else if (type === 'withdraw') {
+                withdrawAmount = currentAmount;
+                document.getElementById('withdraw-amount-display').textContent = currentAmount + ' RWF';
+                updateWithdrawalSummary();
+            } else if (type === 'transfer') {
+                transferAmount = currentAmount;
+                document.getElementById('transfer-amount-display').textContent = currentAmount + ' RWF';
+            }
+        }
+
+        function deleteAmount(type) {
+            if (type === 'deposit') {
+                depositAmount = depositAmount.slice(0, -1);
+                document.getElementById('deposit-amount-display').textContent = (depositAmount || '0') + ' RWF';
+            } else if (type === 'withdraw') {
+                withdrawAmount = withdrawAmount.slice(0, -1);
+                document.getElementById('withdraw-amount-display').textContent = (withdrawAmount || '0') + ' RWF';
+                updateWithdrawalSummary();
+            } else if (type === 'transfer') {
+                transferAmount = transferAmount.slice(0, -1);
+                document.getElementById('transfer-amount-display').textContent = (transferAmount || '0') + ' RWF';
+            }
+        }
+
+        // Payment method selection
+        function selectPaymentMethod(method, type) {
+            // Clear all selections for this type
+            const checkElements = document.querySelectorAll(`[id$="-check-${type}"]`);
+            checkElements.forEach(el => el.textContent = '○');
+            
+            // Remove selected class from all payment methods
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            paymentMethods.forEach(pm => pm.classList.remove('selected'));
+
+            // Set the selected method
+            if (type === 'deposit') {
+                selectedDepositMethod = method;
+                if (method === 'MTN Mobile Money') {
+                    document.getElementById('mtn-check-deposit').textContent = '✓';
+                } else if (method === 'Airtel Money') {
+                    document.getElementById('airtel-check-deposit').textContent = '✓';
+                } else if (method === 'Bank Transfer') {
+                    document.getElementById('bank-check-deposit').textContent = '✓';
+                }
+            } else if (type === 'withdraw') {
+                selectedWithdrawMethod = method;
+                if (method === 'MTN Mobile Money') {
+                    document.getElementById('mtn-check-withdraw').textContent = '✓';
+                } else if (method === 'Airtel Money') {
+                    document.getElementById('airtel-check-withdraw').textContent = '✓';
+                } else if (method === 'Bank Transfer') {
+                    document.getElementById('bank-check-withdraw').textContent = '✓';
+                }
+            } else if (type === 'transfer') {
+                selectedTransferMethod = method;
+                if (method === 'MTN Mobile Money') {
+                    document.getElementById('mtn-check-transfer').textContent = '✓';
+                } else if (method === 'Airtel Money') {
+                    document.getElementById('airtel-check-transfer').textContent = '✓';
+                } else if (method === 'Bank Transfer') {
+                    document.getElementById('bank-check-transfer').textContent = '✓';
+                }
+            }
+
+            // Add selected class to clicked method
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Update withdrawal summary
+        function updateWithdrawalSummary() {
+            const summaryDiv = document.getElementById('withdrawal-summary');
+            if (withdrawAmount && parseFloat(withdrawAmount) > 0) {
+                const baseAmount = parseFloat(withdrawAmount);
+                const fee = baseAmount * 0.02; // 2% fee
+                const netAmount = baseAmount - fee;
+
+                document.getElementById('withdrawal-base-amount').textContent = baseAmount.toLocaleString() + ' RWF';
+                document.getElementById('withdrawal-fee').textContent = fee.toLocaleString() + ' RWF';
+                document.getElementById('withdrawal-net-amount').textContent = netAmount.toLocaleString() + ' RWF';
+                
+                summaryDiv.style.display = 'block';
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+        }
+
+        // Process transactions
+        function processDeposit() {
+            if (!depositAmount || !selectedDepositMethod) {
+                alert('Please enter an amount and select a payment method');
+                return;
+            }
+
+            const amount = parseFloat(depositAmount);
+            
+            // Add to balance
+            totalBalance += amount;
+            
+            // Add transaction
+            transactions.unshift({
+                id: Date.now(),
+                type: 'deposit',
+                amount: amount,
+                method: selectedDepositMethod,
+                date: new Date(),
+                description: `Deposit from ${selectedDepositMethod}`,
+                status: 'completed'
+            });
+
+            // Update UI
+            document.getElementById('total-balance').textContent = totalBalance.toLocaleString() + ' RWF';
+            
+            // Show success message
+            alert(`Successfully deposited ${amount.toLocaleString()} RWF from ${selectedDepositMethod}!`);
+            
+            // Reset form
+            depositAmount = '';
+            selectedDepositMethod = '';
+            document.getElementById('deposit-amount-display').textContent = '0 RWF';
+            document.querySelectorAll('[id$="-check-deposit"]').forEach(el => el.textContent = '○');
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            
+            showPage('home');
+        }
+
+        function requestWithdrawal() {
+            const reason = document.getElementById('withdrawal-reason').value;
+            
+            if (!withdrawAmount || !selectedWithdrawMethod || !reason) {
+                alert('Please enter an amount, select a withdrawal method, and provide a reason');
+                return;
+            }
+
+            const amount = parseFloat(withdrawAmount);
+            
+            if (amount > totalBalance) {
+                alert('Insufficient balance for this withdrawal');
+                return;
+            }
+
+            const fee = amount * 0.02; // 2% fee
+            
+            // Add to pending withdrawals
+            const withdrawalRequest = {
+                id: 'w' + Date.now(),
+                amount: amount,
+                fee: fee,
+                method: selectedWithdrawMethod,
+                reason: reason,
+                date: new Date(),
+                status: 'pending'
+            };
+            
+            pendingWithdrawals.push(withdrawalRequest);
+            
+            // Add to transactions as pending
+            transactions.unshift({
+                id: Date.now(),
+                type: 'withdraw',
+                amount: amount,
+                fee: fee,
+                method: selectedWithdrawMethod,
+                date: new Date(),
+                description: `Withdrawal request - ${reason}`,
+                status: 'pending'
+            });
+            
+            // Show success message
+            alert(`Withdrawal request submitted!\nAmount: ${amount.toLocaleString()} RWF\nReason: ${reason}\n\nYour request has been sent to your approver for review.`);
+            
+            // Reset form
+            withdrawAmount = '';
+            selectedWithdrawMethod = '';
+            document.getElementById('withdraw-amount-display').textContent = '0 RWF';
+            document.getElementById('withdrawal-reason').value = '';
+            document.getElementById('withdrawal-summary').style.display = 'none';
+            document.querySelectorAll('[id$="-check-withdraw"]').forEach(el => el.textContent = '○');
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            
+            updatePendingRequestsHome();
+            showPage('home');
+        }
+
+        function processTransfer() {
+            const recipientPhone = document.getElementById('recipient-phone').value;
+            const recipientName = document.getElementById('recipient-name').value;
+            
+            if (!transferAmount || !selectedTransferMethod || !recipientPhone || !recipientName) {
+                alert('Please fill in all fields and select a transfer method');
+                return;
+            }
+
+            const amount = parseFloat(transferAmount);
+            
+            if (amount > totalBalance) {
+                alert('Insufficient balance for this transfer');
+                return;
+            }
+            
+            // Deduct from balance
+            totalBalance -= amount;
+            
+            // Add transaction
+            transactions.unshift({
+                id: Date.now(),
+                type: 'transfer',
+                amount: amount,
+                method: selectedTransferMethod,
+                recipient: recipientName,
+                phone: recipientPhone,
+                date: new Date(),
+                description: `Transfer to ${recipientName} via ${selectedTransferMethod}`,
+                status: 'completed'
+            });
+
+            // Update UI
+            document.getElementById('total-balance').textContent = totalBalance.toLocaleString() + ' RWF';
+            
+            // Show success message
+            alert(`Successfully sent ${amount.toLocaleString()} RWF to ${recipientName} (${recipientPhone}) via ${selectedTransferMethod}!`);
+            
+            // Reset form
+            transferAmount = '';
+            selectedTransferMethod = '';
+            document.getElementById('transfer-amount-display').textContent = '0 RWF';
+            document.getElementById('recipient-phone').value = '';
+            document.getElementById('recipient-name').value = '';
+            document.querySelectorAll('[id$="-check-transfer"]').forEach(el => el.textContent = '○');
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            
+            showPage('home');
+        }
+
+        // Approval functions
+        function approveWithdrawal(requestId) {
+            const request = pendingWithdrawals.find(r => r.id === requestId);
+            if (!request) return;
+
+            // Process the withdrawal
+            totalBalance -= request.amount;
+            totalProfit += request.fee;
+
+            // Update transaction status
+            const transaction = transactions.find(t => t.description.includes('Withdrawal request') && t.amount === request.amount);
+            if (transaction) {
+                transaction.status = 'completed';
+                transaction.description = `Withdrawal to ${request.method}`;
+            }
+
+            // Remove from pending
+            pendingWithdrawals = pendingWithdrawals.filter(r => r.id !== requestId);
+
+            // Update UI
+            document.getElementById('total-balance').textContent = totalBalance.toLocaleString() + ' RWF';
+            document.getElementById('total-profit').textContent = totalProfit.toLocaleString() + ' RWF';
+
+            alert(`Withdrawal approved!\nAmount: ${(request.amount - request.fee).toLocaleString()} RWF sent to ${request.method}`);
+            
+            updatePendingRequestsHome();
+            loadActivityPage();
+        }
+
+        function rejectWithdrawal(requestId) {
+            const request = pendingWithdrawals.find(r => r.id === requestId);
+            if (!request) return;
+
+            // Update transaction status
+            const transaction = transactions.find(t => t.description.includes('Withdrawal request') && t.amount === request.amount);
+            if (transaction) {
+                transaction.status = 'rejected';
+                transaction.description = `Withdrawal request rejected - ${request.reason}`;
+            }
+
+            // Remove from pending
+            pendingWithdrawals = pendingWithdrawals.filter(r => r.id !== requestId);
+
+            alert(`Withdrawal request rejected.\nReason: ${request.reason}`);
+            
+            updatePendingRequestsHome();
+            loadActivityPage();
+        }
+
+        // Update pending requests on home page
+        function updatePendingRequestsHome() {
+            const pendingSection = document.getElementById('pending-requests-home');
+            const pendingList = document.getElementById('pending-list-home');
+
+            if (pendingWithdrawals.length > 0) {
+                pendingSection.style.display = 'block';
+                pendingList.innerHTML = '';
+
+                pendingWithdrawals.forEach(request => {
+                    const requestDiv = document.createElement('div');
+                    requestDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div>
+                                <div style="font-weight: 600;">${request.amount.toLocaleString()} RWF</div>
+                                <div style="font-size: 12px; color: #666;">${request.reason}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="approve-btn" onclick="approveWithdrawal('${request.id}')">Approve</button>
+                                <button class="reject-btn" onclick="rejectWithdrawal('${request.id}')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                    pendingList.appendChild(requestDiv);
+                });
+            } else {
+                pendingSection.style.display = 'none';
+            }
+        }
+
+        // Load activity page
+        function loadActivityPage() {
+            updateStatistics();
+            loadPendingRequests();
+            loadTransactions();
+        }
+
+        function updateStatistics() {
+            const deposits = transactions.filter(t => t.type === 'deposit' && t.status === 'completed');
+            const withdrawals = transactions.filter(t => t.type === 'withdraw' && t.status === 'completed');
+            const transfers = transactions.filter(t => t.type === 'transfer' && t.status === 'completed');
+
+            document.getElementById('total-deposits').textContent = deposits.length;
+            document.getElementById('total-withdrawals').textContent = withdrawals.length;
+            document.getElementById('total-transfers').textContent = transfers.length;
+            document.getElementById('pending-count').textContent = pendingWithdrawals.length;
+        }
+
+        function loadPendingRequests() {
+            const pendingSection = document.getElementById('pending-requests-section');
+            const pendingList = document.getElementById('pending-requests-list');
+
+            if (pendingWithdrawals.length > 0) {
+                pendingSection.style.display = 'block';
+                pendingList.innerHTML = '';
+
+                pendingWithdrawals.forEach(request => {
+                    const requestDiv = document.createElement('div');
+                    requestDiv.className = 'request-item';
+                    requestDiv.innerHTML = `
+                        <div>
+                            <div style="font-weight: 600;">${request.amount.toLocaleString()} RWF to ${request.method}</div>
+                            <div style="font-size: 12px; color: #666;">Reason: ${request.reason}</div>
+                            <div style="font-size: 12px; color: #666;">${request.date.toLocaleDateString()}</div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="approve-btn" onclick="approveWithdrawal('${request.id}')">Approve</button>
+                            <button class="reject-btn" onclick="rejectWithdrawal('${request.id}')">Reject</button>
+                        </div>
+                    `;
+                    pendingList.appendChild(requestDiv);
+                });
+            } else {
+                pendingSection.style.display = 'none';
+            }
+        }
+
+        // Filter transactions
+        function filterTransactions(filter) {
+            currentFilter = filter;
+            
+            // Update filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadTransactions();
+        }
+
+        // Load transactions
+        function loadTransactions() {
+            const transactionList = document.getElementById('transaction-list');
+            transactionList.innerHTML = '';
+
+            let filteredTransactions = transactions;
+            
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'pending') {
+                    filteredTransactions = transactions.filter(t => t.status === 'pending');
+                } else {
+                    filteredTransactions = transactions.filter(t => t.type === currentFilter);
+                }
+            }
+
+            if (filteredTransactions.length === 0) {
+                transactionList.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">No transactions found</div>';
+                return;
+            }
+
+            filteredTransactions.forEach(transaction => {
+                const transactionDiv = document.createElement('div');
+                transactionDiv.className = 'transaction-item';
+
+                let iconClass = '';
+                let amountClass = '';
+                let amountText = '';
+                let statusText = '';
+
+                if (transaction.type === 'deposit') {
+                    iconClass = 'deposit-transaction';
+                    amountClass = 'positive';
+                    amountText = `+${transaction.amount.toLocaleString()} RWF`;
+                } else if (transaction.type === 'withdraw') {
+                    if (transaction.status === 'pending') {
+                        iconClass = 'pending-transaction';
+                        amountClass = 'pending';
+                        amountText = `${transaction.amount.toLocaleString()} RWF (Pending)`;
+                    } else {
+                        iconClass = 'withdraw-transaction';
+                        amountClass = 'negative';
+                        amountText = `-${transaction.amount.toLocaleString()} RWF`;
+                    }
+                } else if (transaction.type === 'transfer') {
+                    iconClass = 'transfer-transaction';
+                    amountClass = 'negative';
+                    amountText = `-${transaction.amount.toLocaleString()} RWF`;
+                }
+
+                if (transaction.status === 'pending') {
+                    statusText = ' (Pending Approval)';
+                } else if (transaction.status === 'rejected') {
+                    statusText = ' (Rejected)';
+                    amountClass = 'negative';
+                }
+
+                transactionDiv.innerHTML = `
+                    <div class="transaction-info">
+                        <div class="transaction-icon ${iconClass}">
+                            ${transaction.type === 'deposit' ? '+' : transaction.type === 'withdraw' ? '-' : '→'}
+                        </div>
+                        <div class="transaction-details">
+                            <h4>${transaction.description}${statusText}</h4>
+                            <div class="transaction-date">${transaction.date.toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount ${amountClass}">${amountText}</div>
+                `;
+
+                transactionList.appendChild(transactionDiv);
+            });
+        }
+
+        // Settings functions
+        function toggleNotifications() {
+            notificationsEnabled = !notificationsEnabled;
+            document.getElementById('notification-toggle').textContent = notificationsEnabled ? 'ON' : 'OFF';
+            alert(`Notifications ${notificationsEnabled ? 'enabled' : 'disabled'}`);
+        }
+
+        function contactSupport() {
+            alert('Customer Support\n\nPhone: +250 788 123 456\nEmail: support@smartsave.rw\nHours: Mon-Fri, 8AM-6PM\n\nHow can we help you today?');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('You have been logged out successfully.\n\nThank you for using SmartSave!');
+                // In a real app, this would redirect to login page
+                location.reload();
+            }
+        }
+
+        function createGoal() {
+            const goalName = document.getElementById('goal-name').value;
+            const goalAmount = document.getElementById('goal-amount').value;
+            const goalDate = document.getElementById('goal-date').value;
+
+            if (goalName && goalAmount && goalDate) {
+                alert(`Goal "${goalName}" created successfully!\nTarget: ${parseFloat(goalAmount).toLocaleString()} RWF by ${goalDate}`);
+                // Clear form
+                document.getElementById('goal-name').value = '';
+                document.getElementById('goal-amount').value = '';
+                document.getElementById('goal-date').value = '';
+                showPage('home');
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Initialize
+        updateTime();
+        setInterval(updateTime, 1000);
+        updatePendingRequestsHome();
+    </script>
+</body>
+</html>
